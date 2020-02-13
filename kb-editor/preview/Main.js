@@ -39144,8 +39144,8 @@ kbe_KeyButton.prototype = $extend(kbe_components_OneWayButton.prototype,{
 	key: null
 	,scale: null
 	,refresh: function() {
-		this.set_top(this.key.y * this.scale);
-		this.set_left(this.key.x * this.scale);
+		this.set_top(16 + this.key.y * this.scale);
+		this.set_left(16 + this.key.x * this.scale);
 		this.set_width(this.key.width * this.scale);
 		this.set_height(this.key.height * this.scale);
 	}
@@ -41501,7 +41501,7 @@ var kbe_WiringPage = function(editor) {
 	this.addClass("wiringpage-component");
 	var c = this.findComponent("keyView",haxe_ui_core_Component);
 	if(c != null) {
-		c.registerEvent("keydown",$bind(this,this.onTopKeyDown));
+		c.registerEvent("keyup",$bind(this,this.onTopKeyDownU));
 	} else {
 		haxe_Log.trace("WARNING: could not find component to regsiter event (" + "keyView" + ")",{ fileName : "haxe/ui/macros/Macros.hx", lineNumber : 243, className : "kbe.WiringPage", methodName : "new"});
 	}
@@ -41516,7 +41516,6 @@ var kbe_WiringPage = function(editor) {
 	}
 	this.editor = editor;
 	this.keyboard = editor.getKeyboard();
-	var t1 = new haxe_ui_containers_TableView();
 	this.set_percentWidth(100);
 	this.set_percentHeight(100);
 	this.set_text("Wiring");
@@ -41565,18 +41564,25 @@ kbe_WiringPage.prototype = $extend(haxe_ui_containers_HBox.prototype,{
 			if(currentButton != button) {
 				var row = currentButton != null ? currentButton.key.row : -1;
 				var column = currentButton != null ? currentButton.key.column : -1;
+				var color = haxe_ui_util__$Color_Color_$Impl_$.toInt(button.get_backgroundColor());
 				if(!button.get_selected()) {
 					if(key.row == row) {
-						button.set_backgroundColor(14745056);
+						color = 14745056;
 					} else if(column == key.column) {
-						button.set_backgroundColor(14737661);
+						color = 14737661;
 					}
 				}
 				if(this.conflictingKeys.h.hasOwnProperty(key.id)) {
-					button.set_backgroundColor(16763904);
+					color = 16763904;
 				}
 				if(key.row == row && column == key.column && button != this.keyView.get_activeButton()) {
-					button.set_backgroundColor(16737894);
+					color = 16737894;
+				}
+				if(color != null) {
+					if(button.get_selected()) {
+						color = thx_color__$Rgb_Rgb_$Impl_$.darker(color,0.2);
+					}
+					button.set_backgroundColor(thx_color__$Rgb_Rgb_$Impl_$.toInt(color));
 				}
 			}
 		} else if(this.colorMode == kbe__$WiringPage_ColorMode.RainbowRows) {
@@ -41814,7 +41820,7 @@ kbe_WiringPage.prototype = $extend(haxe_ui_containers_HBox.prototype,{
 		this.resizeMatrix();
 		this.refreshFormatting();
 	}
-	,onTopKeyDown: function(e) {
+	,onTopKeyDownU: function(e) {
 		if(e.keyCode == kbe_KC.R) {
 			this.quickSetMode.set_selectedIndex(1);
 		} else if(e.keyCode == kbe_KC.C) {
@@ -41829,12 +41835,14 @@ kbe_WiringPage.prototype = $extend(haxe_ui_containers_HBox.prototype,{
 		var quickMode = this.quickSetMode.get_selectedItem().id;
 		if(number != null && (quickMode == "row" || quickMode == "column")) {
 			if(quickMode == "row") {
-				this.pRowEditor.set_focus(true);
 				this.pRowEditor.set_number(number);
+				this.pRowEditor.set_focus(true);
+				e.cancel();
 			}
 			if(quickMode == "column") {
-				this.pColumnEditor.set_focus(true);
 				this.pColumnEditor.set_number(number);
+				this.pColumnEditor.set_focus(true);
+				e.cancel();
 			}
 		}
 	}
@@ -42140,6 +42148,7 @@ var kbe_components_KeyboardContainer = function() {
 	this.canvas = new haxe_ui_containers_Absolute();
 	this.scrollView = new haxe_ui_containers_ScrollView();
 	haxe_ui_containers_Box.call(this);
+	this.registerEvent("resize",$bind(this,this.onResize));
 	this.scrollView.addComponent(this.canvas);
 	var dummy = new haxe_ui_core_Component();
 	this.canvas.addComponent(dummy);
@@ -42245,6 +42254,17 @@ kbe_components_KeyboardContainer.prototype = $extend(haxe_ui_containers_Box.prot
 		this.canvas.set_height(null);
 		this.canvas.set_width(null);
 		this.canvas.autoSize();
+		var w = Math.max(this.canvas.get_width(),this.get_width() - 16);
+		if(w > 0) {
+			this.canvas.set_width(w);
+		}
+		var h = Math.max(this.canvas.get_height(),this.get_height() - 16);
+		if(h > 0) {
+			this.canvas.set_height(h);
+		}
+	}
+	,onResize: function(_) {
+		this.updateLayout();
 	}
 	,addKey: function(key) {
 		var button = new kbe_KeyButton(key);
