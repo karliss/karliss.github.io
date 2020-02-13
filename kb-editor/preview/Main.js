@@ -39144,8 +39144,8 @@ kbe_KeyButton.prototype = $extend(kbe_components_OneWayButton.prototype,{
 	key: null
 	,scale: null
 	,refresh: function() {
-		this.set_top(16 + this.key.y * this.scale);
-		this.set_left(16 + this.key.x * this.scale);
+		this.set_top(kbe_components_KeyboardContainer.TOP_OFFSET + this.key.y * this.scale);
+		this.set_left(kbe_components_KeyboardContainer.LEFT_OFFSET + this.key.x * this.scale);
 		this.set_width(this.key.width * this.scale);
 		this.set_height(this.key.height * this.scale);
 	}
@@ -41564,7 +41564,7 @@ kbe_WiringPage.prototype = $extend(haxe_ui_containers_HBox.prototype,{
 			if(currentButton != button) {
 				var row = currentButton != null ? currentButton.key.row : -1;
 				var column = currentButton != null ? currentButton.key.column : -1;
-				var color = haxe_ui_util__$Color_Color_$Impl_$.toInt(button.get_backgroundColor());
+				var color = null;
 				if(!button.get_selected()) {
 					if(key.row == row) {
 						color = 14745056;
@@ -42242,8 +42242,8 @@ kbe_components_KeyboardContainer.prototype = $extend(haxe_ui_containers_Box.prot
 	}
 	,screenToField: function(x,y) {
 		var result = { x : 0, y : 0};
-		result.x = (x - this.canvas.get_screenLeft()) / this.scale;
-		result.y = (y - this.canvas.get_screenTop()) / this.scale;
+		result.x = (x - this.canvas.get_screenLeft() - kbe_components_KeyboardContainer.LEFT_OFFSET) / this.scale;
+		result.y = (y - this.canvas.get_screenTop() - kbe_components_KeyboardContainer.TOP_OFFSET) / this.scale;
 		return result;
 	}
 	,addComponent: function(child) {
@@ -56777,6 +56777,8 @@ kbe_KeyVisualizer.COMMON_LABEL_MODES = [{ value : "Name", mode : kbe_KeyLabelMod
 kbe_components_KeyboardContainer.BUTTON_CHANGED = "BUTTON_CHANGED";
 kbe_components_KeyboardContainer.BUTTON_CLICKED = "BUTTON_CLICKED";
 kbe_components_KeyboardContainer.BUTTON_DOWN = "BUTTON_MOUSE_DOWN";
+kbe_components_KeyboardContainer.TOP_OFFSET = 32;
+kbe_components_KeyboardContainer.LEFT_OFFSET = 32;
 thx_Dates.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Dates.compare);
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;
